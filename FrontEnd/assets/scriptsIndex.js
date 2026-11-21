@@ -46,30 +46,6 @@ let worksList = await worksFetch();
 
 let worksCategoriesList = await worksCategoriesFetch();
 
-function changeValidateButtonColor() {
-  const button = document.getElementById("validateButton");
-  if (
-    addNewWorkPicture === 1 &&
-    addNewWorkTitle === 1 &&
-    addNewWorkCategory === 1
-  ) {
-    button.style.backgroundColor = "#1d6154";
-    button.setAttribute("form", "workForm");
-    button.setAttribute("type", "submit");
-  } else {
-    button.style.backgroundColor = "#A7A7A7";
-  }
-}
-
-function preview(file, url) {
-  picturePreview.src = url;
-  picturePreview.alt = file.name;
-  picturePreview.style.display = "flex";
-  picturePreviewImg.style.display = "none";
-  picturePreviewDiv.style.display = "none";
-  picturePreviewP.style.display = "none";
-}
-
 async function worksFetch() {
   const worksReponse = await fetch("http://localhost:5678/api/works/");
   const worksList = await worksReponse.json();
@@ -85,6 +61,7 @@ async function worksCategoriesFetch() {
 }
 
 function worksCategoriesCreation(id) {
+  // fonction pour créer les boutons de filtres de catégories
   const categorie = worksCategoriesList[id];
   const button = document.createElement("button");
   const text = categorie.name;
@@ -106,14 +83,15 @@ function worksCategoriesCreation(id) {
 }
 
 function worksCreation(id) {
+  // fonction pour afficher chaque projet
   const work = worksList[id];
   const workcategory = work.category.name;
   const buttonSelected = document.querySelector(".buttonCategorieSelected");
   const buttonSelectedName = buttonSelected.textContent;
-  if (buttonSelectedName == "Tous") {
+  if (buttonSelectedName === "Tous") {
+    // si le bouton "Tous" est sélectionné, on applique la fonction de création pour tous les projets
     const figure = document.createElement("figure");
     const img = document.createElement("img");
-    figure.id = work.title;
     img.src = work.imageUrl;
     img.alt = work.title;
     const figcaption = document.createElement("figcaption");
@@ -122,7 +100,8 @@ function worksCreation(id) {
     figure.appendChild(figcaption);
     worksGallery.appendChild(figure);
   } else {
-    if (buttonSelectedName == workcategory) {
+    if (buttonSelectedName === workcategory) {
+      // si on est sur un autre bouton, on applique la fonction de création seulement si le la catégorie du projet correspond à la catégorie sélectionnée
       const figure = document.createElement("figure");
       const img = document.createElement("img");
       img.src = work.imageUrl;
@@ -137,12 +116,14 @@ function worksCreation(id) {
 }
 
 function worksCategoriesDisplay() {
+  // fonction pour appeler la fonction worksCategoriesCreation autant de fois qu'il y a de categories à afficher
   for (let i = 0; i < worksCategoriesList.length; i++) {
     worksCategoriesCreation(i);
   }
 }
 
 function worksDisplay() {
+  // fonction pour appeler la fonction worksCreation autant de fois qu'il y a de projets à afficher
   for (let i = 0; i < worksList.length; i++) {
     worksCreation(i);
   }
@@ -187,19 +168,6 @@ function editWorksRemove() {
   for (let i = 0; i < editWorks.length; i++) {
     editWorks[i].remove();
   }
-}
-
-async function worksDelete(id, userToken) {
-  console.log(id);
-  const urlWorks = "http://localhost:5678/api/works/";
-  const deleteUrl = urlWorks.concat(id);
-  const bearer = "Bearer " + userToken;
-  const deleteHeaders = new Headers();
-  deleteHeaders.append("Authorization", bearer);
-  await fetch(deleteUrl, {
-    method: "DELETE",
-    headers: deleteHeaders,
-  });
 }
 
 function editWorksDisplay() {
@@ -256,6 +224,18 @@ function modaleDisplay() {
   modale.style.display = "flex";
 }
 
+async function worksDelete(id, userToken) {
+  const urlWorks = "http://localhost:5678/api/works/";
+  const deleteUrl = urlWorks.concat(id);
+  const bearer = "Bearer " + userToken;
+  const deleteHeaders = new Headers();
+  deleteHeaders.append("Authorization", bearer);
+  await fetch(deleteUrl, {
+    method: "DELETE",
+    headers: deleteHeaders,
+  });
+}
+
 async function modaleRemove() {
   const bodyShadow = document.getElementById("bodyShadow");
   bodyShadow.style.display = "none";
@@ -287,6 +267,30 @@ function addPicture() {
   changeValidateButtonColor();
 }
 
+function changeValidateButtonColor() {
+  const button = document.getElementById("validateButton");
+  if (
+    addNewWorkPicture === 1 &&
+    addNewWorkTitle === 1 &&
+    addNewWorkCategory === 1
+  ) {
+    button.style.backgroundColor = "#1d6154";
+    button.setAttribute("form", "workForm");
+    button.setAttribute("type", "submit");
+  } else {
+    button.style.backgroundColor = "#A7A7A7";
+  }
+}
+
+function preview(file, url) {
+  picturePreview.src = url;
+  picturePreview.alt = file.name;
+  picturePreview.style.display = "flex";
+  picturePreviewImg.style.display = "none";
+  picturePreviewDiv.style.display = "none";
+  picturePreviewP.style.display = "none";
+}
+
 function leftArrowBack() {
   const modaleLeftArrow = document.getElementById("modaleLeftArrow");
   modaleLeftArrow.style.color = "white";
@@ -308,25 +312,33 @@ function leftArrowBack() {
 }
 
 async function formSubmit() {
+  // fonction pour ajouter un nouveau projet
   if (
     addNewWorkPicture === 1 &&
     addNewWorkTitle === 1 &&
     addNewWorkCategory === 1
   ) {
-    const formData = new FormData();
+    const formData = new FormData(); // création d'un objet FormData pour récupérer les données du formulaire d'ajout de projet
     const newPicture = inputPicture.files[0];
     const newTitle = inputTitle.value;
     const newCategory = inputCategory.value;
     formData.append("image", newPicture);
     formData.append("title", newTitle);
     formData.append("category", newCategory);
-    const bearer = "Bearer " + userToken;
-    const request = new XMLHttpRequest();
-    request.open("POST", "http://localhost:5678/api/works");
-    request.setRequestHeader("Authorization", bearer);
-    request.setRequestHeader("Accept", "application/json");
-    request.send(formData);
-    form.reset();
+    const bearer = "Bearer " + userToken; // création du token d'authentification
+    const newHeaders = new Headers(); // création du headers
+    newHeaders.append("Authorization", bearer);
+    newHeaders.append("Accept", "application/json");
+    const newPostResponse = await fetch("http://localhost:5678/api/works", {
+      // envoi de la requête POST
+      method: "POST",
+      headers: newHeaders,
+      body: formData,
+    });
+    const newPostRes = await newPostResponse.json();
+    console.log(newPostRes);
+    form.reset(); // vide le formulaire
+    addPicture();
     main();
   } else {
     alert("Il y a une erreur dans le formulaire");
@@ -334,6 +346,7 @@ async function formSubmit() {
 }
 
 async function main() {
+  // fonction principale pour l'affichage des projets, des catégories et des miniatures de projets dans la modale
   worksCategoriesList = await worksCategoriesFetch();
   worksList = await worksFetch();
   editWorksRemove();
@@ -346,17 +359,19 @@ async function main() {
   form.reset();
 }
 
-inputPicture.addEventListener("change", (event) => {
-  if (event.target.value) {
+inputPicture.addEventListener("change", () => {
+  const file = inputPicture.files[0];
+  const fileSize = file.size;
+  console.log(fileSize);
+  if (fileSize <= 4000000) {
+    const fileUrl = URL.createObjectURL(file);
     addNewWorkPicture = 1;
+    preview(file, fileUrl);
+    changeValidateButtonColor();
   } else {
     addNewWorkPicture = 0;
+    alert("Le fichier que vous souhaitez téléverser est trop volumineux");
   }
-  const file = inputPicture.files[0];
-  const fileUrl = URL.createObjectURL(file);
-  preview(file, fileUrl);
-  changeValidateButtonColor();
-  return file;
 });
 
 inputTitle.addEventListener("change", (event) => {
