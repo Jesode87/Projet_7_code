@@ -362,7 +362,6 @@ async function main() {
 inputPicture.addEventListener("change", () => {
   const file = inputPicture.files[0];
   const fileSize = file.size;
-  console.log(fileSize);
   if (fileSize <= 4000000) {
     const fileUrl = URL.createObjectURL(file);
     addNewWorkPicture = 1;
@@ -428,6 +427,8 @@ modaleLeftArrowBack.addEventListener("click", () => {
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   formSubmit();
+  leftArrowBack();
+  modaleRemove();
 });
 
 main();
